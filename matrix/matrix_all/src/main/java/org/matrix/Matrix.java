@@ -4,56 +4,68 @@ import java.util.Arrays;
 
 public class DijkstraMatrix {
 
-    static final int INF = 1_000_000_000;
+    private static final int UNREACHABLE = 1_000_000_000;
 
     public static void main(String[] args) {
 
-
-        int[][] matr = {
-                {0, 7, 9, INF, INF, 14},
-                {7, 0, 10, 15, INF, INF},
-                {9, 10, 0, 11, INF, 2},
-                {INF, 15, 11, 0, 6, INF},
-                {INF, INF, INF, 6, 0, 9},
-                {14, INF, 2, INF, 9, 0}
+        int[][] graph = {
+                {0, 7, 9, UNREACHABLE, UNREACHABLE, 14},
+                {7, 0, 10, 15, UNREACHABLE, UNREACHABLE},
+                {9, 10, 0, 11, UNREACHABLE, 2},
+                {UNREACHABLE, 15, 11, 0, 6, UNREACHABLE},
+                {UNREACHABLE, UNREACHABLE, UNREACHABLE, 6, 0, 9},
+                {14, UNREACHABLE, 2, UNREACHABLE, 9, 0}
         };
 
-        dijkstra(matr, 0);
+        findShortestPaths(graph, 0);
     }
 
-    static void dijkstra(int[][] matr, int start) {
-        int n = matr.length;
+    static void findShortestPaths(int[][] graph, int source) {
+        int size = graph.length;
 
-        int[] dist = new int[n];
-        boolean[] used = new boolean[n];
+        int[] shortest = new int[size];
+        boolean[] visited = new boolean[size];
 
-        Arrays.fill(dist, INF);
-        dist[start] = 0;
+        Arrays.fill(shortest, UNREACHABLE);
+        shortest[source] = 0;
 
-        for (int i = 0; i < n; i++) {
-            int v = -1;
+        for (int step = 0; step < size; step++) {
 
+            int current = getNearestVertex(shortest, visited);
 
-            for (int j = 0; j < n; j++) {
-                if (!used[j] && (v == -1 || dist[j] < dist[v])) {
-                    v = j;
-                }
-            }
+            if (current == -1) break;
 
-            used[v] = true;
+            visited[current] = true;
 
-
-            for (int to = 0; to < n; to++) {
-                if (matr[v][to] < INF) {
-                    dist[to] = Math.min(dist[to], dist[v] + matr[v][to]);
+            for (int next = 0; next < size; next++) {
+                if (!visited[next] && graph[current][next] != UNREACHABLE) {
+                    int newDistance = shortest[current] + graph[current][next];
+                    if (newDistance < shortest[next]) {
+                        shortest[next] = newDistance;
+                    }
                 }
             }
         }
 
+        printResult(shortest);
+    }
 
-        char vertex = 'A';
-        for (int i = 0; i < n; i++) {
-            System.out.println("A -> " + (char)(vertex + i) + " = " + dist[i]);
+    private static int getNearestVertex(int[] dist, boolean[] used) {
+        int best = -1;
+
+        for (int i = 0; i < dist.length; i++) {
+            if (!used[i] && (best == -1 || dist[i] < dist[best])) {
+                best = i;
+            }
+        }
+        return best;
+    }
+
+    private static void printResult(int[] distances) {
+        for (int i = 0; i < distances.length; i++) {
+            char from = 'A';
+            char to = (char) (from + i);
+            System.out.println("From A to " + to + " : " + distances[i]);
         }
     }
 }
